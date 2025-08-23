@@ -4,8 +4,7 @@ import aiohttp
 import sys
 
 # Base URL for the running API server
-BASE_URL = ""
-# eg::-BASE_URL = "https://ide-bbfeeedbcaf332013968deeebdeeafecbone.premiumproject.examly.io/proxy/8080/"
+BASE_URL = "http://localhost:8080"
 
 class TestMainApp(unittest.IsolatedAsyncioTestCase):
 
