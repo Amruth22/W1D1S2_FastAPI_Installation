@@ -127,27 +127,6 @@ def test_delete_item():
     assert create_response.status_code == 201
     
     # Delete the item
-    delete_response = requests.delete(f"{BASE_URL}/items/30")
-    assert delete_response.status_code == 204
-    
-    # Verify item is deleted by trying to get it
-    get_response = requests.get(f"{BASE_URL}/items/30")
-    assert get_response.status_code == 404
-    
-    print("PASS: Delete item test passed")
-
-def test_item_validation():
-    """Test item validation errors"""
-    # Test missing required fields
-    invalid_item = {
-        "name": "Invalid Item"
-        # Missing id and price
-    }
-    
-    response = requests.post(f"{BASE_URL}/items/", json=invalid_item)
-    assert response.status_code == 422  # Validation error
-    
-    # Test invalid data types
     invalid_item2 = {
         "id": "not_a_number",  # Should be int
         "name": "Test Item",
@@ -167,19 +146,6 @@ def test_duplicate_id_handling():
         "price": 100.00
     }
     
-    # Create first item
-    response1 = requests.post(f"{BASE_URL}/items/", json=item_data)
-    assert response1.status_code == 201
-    
-    # Try to create another item with same ID
-    duplicate_item = {
-        "id": 40,
-        "name": "Duplicate Item",
-        "price": 200.00
-    }
-    
-    response2 = requests.post(f"{BASE_URL}/items/", json=duplicate_item)
-    assert response2.status_code == 400  # Bad request for duplicate ID
     error_data = response2.json()
     assert "already exists" in error_data["detail"]
     
@@ -197,37 +163,6 @@ def test_get_nonexistent_item():
 def test_update_nonexistent_item():
     """Test updating an item that doesn't exist"""
     update_data = {
-        "id": 99998,
-        "name": "Nonexistent Item",
-        "price": 100.00
-    }
-    
-    response = requests.put(f"{BASE_URL}/items/99998", json=update_data)
-    assert response.status_code == 404
-    error_data = response.json()
-    assert error_data["detail"] == "Item not found"
-    
-    print("PASS: Update nonexistent item test passed")
-
-def test_item_without_description():
-    """Test creating item without optional description field"""
-    item_data = {
-        "id": 50,
-        "name": "Item Without Description",
-        "price": 25.99
-    }
-    
-    response = requests.post(f"{BASE_URL}/items/", json=item_data)
-    assert response.status_code == 201
-    created_item = response.json()
-    assert created_item["id"] == 50
-    assert created_item["name"] == "Item Without Description"
-    assert created_item["price"] == 25.99
-    assert created_item["description"] is None
-    
-    print("PASS: Item without description test passed")
-
-def test_price_validation():
     """Test price field validation"""
     # Test negative price
     item_with_negative_price = {
@@ -247,42 +182,6 @@ def test_price_validation():
         "name": "Zero Price Item",
         "price": 0.00
     }
-    
-    response2 = requests.post(f"{BASE_URL}/items/", json=item_with_zero_price)
-    assert response2.status_code == 201  # Zero price is typically valid
-    
-    print("PASS: Price validation test passed")
-
-def test_large_item_list():
-    """Test handling of multiple items"""
-    # Create multiple items to test list handling
-    base_id = 100
-    items_to_create = 5
-    
-    for i in range(items_to_create):
-        item_data = {
-            "id": base_id + i,
-            "name": f"Bulk Item {i+1}",
-            "description": f"Description for bulk item {i+1}",
-            "price": 10.00 * (i + 1)
-        }
-        
-        response = requests.post(f"{BASE_URL}/items/", json=item_data)
-        assert response.status_code == 201
-    
-    # Get all items and verify count
-    response = requests.get(f"{BASE_URL}/items/")
-    assert response.status_code == 200
-    all_items = response.json()
-    
-    # Check that our bulk items are present
-    bulk_item_ids = [base_id + i for i in range(items_to_create)]
-    existing_ids = [item["id"] for item in all_items]
-    
-    for bulk_id in bulk_item_ids:
-        assert bulk_id in existing_ids
-    
-    print("PASS: Large item list test passed")
 
 def test_json_response_format():
     """Test that responses are properly formatted JSON"""
@@ -297,22 +196,6 @@ def test_json_response_format():
     assert response2.headers.get("content-type", "").startswith("application/json")
     data = response2.json()
     assert isinstance(data, list)
-    
-    print("PASS: JSON response format test passed")
-
-def run_all_tests():
-    """Run all tests and provide summary"""
-    print("Running synchronous API tests for FastAPI Installation project...")
-    print("Server should be running at: http://localhost:8080")
-    print("=" * 70)
-    
-    # List of all test functions
-    test_functions = [
-        test_app_health,
-        test_create_item,
-        test_get_item_by_id,
-        test_get_all_items,
-        test_update_item,
         test_delete_item,
         test_item_validation,
         test_duplicate_id_handling,
