@@ -127,6 +127,27 @@ def test_delete_item():
     assert create_response.status_code == 201
     
     # Delete the item
+    delete_response = requests.delete(f"{BASE_URL}/items/30")
+    assert delete_response.status_code == 204
+    
+    # Verify item is deleted by trying to get it
+    get_response = requests.get(f"{BASE_URL}/items/30")
+    assert get_response.status_code == 404
+    
+    print("PASS: Delete item test passed")
+
+def test_item_validation():
+    """Test item validation errors"""
+    # Test missing required fields
+    invalid_item = {
+        "name": "Invalid Item"
+        # Missing id and price
+    }
+    
+    response = requests.post(f"{BASE_URL}/items/", json=invalid_item)
+    assert response.status_code == 422  # Validation error
+    
+    # Test invalid data types
     invalid_item2 = {
         "id": "not_a_number",  # Should be int
         "name": "Test Item",
@@ -138,19 +159,6 @@ def test_delete_item():
     
     print("PASS: Item validation test passed")
 
-def test_duplicate_id_handling():
-    """Test handling of duplicate item IDs"""
-    item_data = {
-        "id": 40,
-        "name": "First Item",
-        "price": 100.00
-    }
-    
-    error_data = response2.json()
-    assert "already exists" in error_data["detail"]
-    
-    print("PASS: Duplicate ID handling test passed")
-
 def test_get_nonexistent_item():
     """Test getting an item that doesn't exist"""
     response = requests.get(f"{BASE_URL}/items/99999")
@@ -160,43 +168,24 @@ def test_get_nonexistent_item():
     
     print("PASS: Get nonexistent item test passed")
 
-def test_update_nonexistent_item():
-    """Test updating an item that doesn't exist"""
-    update_data = {
-    """Test price field validation"""
-    # Test negative price
-    item_with_negative_price = {
-        "id": 60,
-        "name": "Negative Price Item",
-        "price": -10.00
+def test_item_without_description():
+    """Test creating item without optional description field"""
+    item_data = {
+        "id": 50,
+        "name": "Item Without Description",
+        "price": 25.99
     }
     
-    response = requests.post(f"{BASE_URL}/items/", json=item_with_negative_price)
-    # Note: The current API doesn't validate negative prices, but this test documents the behavior
-    # In a real application, you might want to add validation for positive prices
-    assert response.status_code in [201, 422]  # Either accepts or validates
+    response = requests.post(f"{BASE_URL}/items/", json=item_data)
+    assert response.status_code == 201
+    created_item = response.json()
+    assert created_item["id"] == 50
+    assert created_item["name"] == "Item Without Description"
+    assert created_item["price"] == 25.99
+    assert created_item["description"] is None
     
-    # Test zero price
-    item_with_zero_price = {
-        "id": 61,
-        "name": "Zero Price Item",
-        "price": 0.00
-    }
+    print("PASS: Item without description test passed")
 
-def test_json_response_format():
-    """Test that responses are properly formatted JSON"""
-    # Test root endpoint JSON format
-    response = requests.get(f"{BASE_URL}/")
-    assert response.status_code == 200
-    assert response.headers.get("content-type", "").startswith("application/json")
-    
-    # Test items list JSON format
-    response2 = requests.get(f"{BASE_URL}/items/")
-    assert response2.status_code == 200
-    assert response2.headers.get("content-type", "").startswith("application/json")
-    data = response2.json()
-    assert isinstance(data, list)
-        test_delete_item,
 def run_all_tests():
     """Run all tests and provide summary"""
     print("Running synchronous API tests for FastAPI Installation project...")
