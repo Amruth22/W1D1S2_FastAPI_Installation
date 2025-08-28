@@ -218,6 +218,15 @@ def run_all_tests():
     
     passed = 0
     failed = 0
+    
+    for test_func in test_functions:
+        try:
+            test_func()
+            passed += 1
+        except Exception as e:
+            print(f"FAIL: {test_func.__name__} - {e}")
+            failed += 1
+    
     print("=" * 70)
     print(f"📊 Test Results Summary:")
     print(f"✅ Passed: {passed}")
